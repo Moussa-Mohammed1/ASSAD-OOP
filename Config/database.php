@@ -20,10 +20,8 @@
                 );
                 // definir le mode d'erreur
                 $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                return $this->conn;
             } catch (PDOException $error) {
-                echo 'failed to connect: ' . $error->getMessage();
-                return null;
+                die('failed to connect: ' . $error->getMessage());
             }
         }
 
