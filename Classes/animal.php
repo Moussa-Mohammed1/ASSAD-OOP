@@ -1,5 +1,5 @@
 <?php
-include './Config/config.php';
+include './../Config/config.php';
 class Animal
 {
     private Database $pdo;
@@ -82,11 +82,11 @@ class Animal
     }
 
 
-    public function deleteAnimal(int $id_animal,){
-        $sql = 'DELETE FROM animal WHERE id_animal = :ida';
+    public function deleteAnimal($image){
+        $sql = 'DELETE FROM animal WHERE `image` = :img';
         $pdo = $this->pdo;
         $pdo->query($sql);
-        $pdo->bind(':ida',$id_animal);
+        $pdo->bind(':img',$image);
         $pdo->execute();
     }
 
@@ -175,3 +175,17 @@ class Animal
         return $this->id_habitat;
     }
 }
+
+$nom = 'assad';
+$espece = 'lion';
+$alimentation = 'carniv';
+$image = 'nothing';
+$paysOrigine ='MOROCCO';
+$descriptionCourte = 'what??';
+$id_habitat = '2';
+
+$a = new Animal($pdo, $nom, $espece, $alimentation, $image, $paysOrigine, $descriptionCourte, $id_habitat);
+$a->addAnimal();
+echo 'done';
+$a->deleteAnimal($a->getImage());
+echo 'deleted';
