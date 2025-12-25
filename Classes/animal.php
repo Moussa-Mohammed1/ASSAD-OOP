@@ -11,8 +11,9 @@ class Animal
     private $descriptionCourte;
     private $id_habitat;
 
-    public function __construct($nom, $espece, $alimentation, $image, $paysOrigine, $descriptionCourte, $id_habitat)
+    public function __construct(Database $pdo, $nom, $espece, $alimentation, $image, $paysOrigine, $descriptionCourte, $id_habitat)
     {
+        $this->pdo = $pdo;
         $this->nom = $nom;
         $this->espece = $espece;
         $this->alimentation = $alimentation;
@@ -32,6 +33,80 @@ class Animal
             $result = $pdo->get();
             return $result;
         } else {
+            return null;
+        }
+    }
+
+    public function addAnimal()
+    {
+        $sql = 'INSERT INTO animal(nom,espece ,alimentation,`image` ,paysorigine ,`description`,id_habitat)
+                    VALUES(:nom, :espece, :alim, :img, :pays, :descr, :idh)';
+        $pdo = $this->pdo;
+        $pdo->query($sql);
+        $pdo->bind(':nom', $this->nom);
+        $pdo->bind(':espece', $this->espece);
+        $pdo->bind(':alim', $this->alimentation);
+        $pdo->bind(':img', $this->image);
+        $pdo->bind(':pays', $this->paysOrigine);
+        $pdo->bind(':descr', $this->descriptionCourte);
+        $pdo->bind(':idh', $this->id_habitat);
+        $pdo->execute();
+    }
+
+    public function updateAnimal($id_animal, $nom, $espece, $alimentation, $image, $paysOrigine, $descriptionCourte, $id_habitat)
+    {
+        $sql = 'UPDATE 
+                    animal 
+                SET 
+                    nom = :nom ,
+                    espece = :esp ,
+                    alimentation = :alim,
+                    `image` = :img ,
+                    paysorigine = :pay ,
+                    `description` = :descr,
+                    id_habitat = :idh 
+                WHERE 
+                    id_animal = :ida';
+
+        $pdo = $this->pdo;
+        $pdo->query($sql);
+        $pdo->bind(':nom', $nom);
+        $pdo->bind(':esp', $espece);
+        $pdo->bind(':alim', $alimentation);
+        $pdo->bind(':img', $image);
+        $pdo->bind(':pay', $paysOrigine);
+        $pdo->bind(':descr', $descriptionCourte);
+        $pdo->bind(':idh', $id_habitat);
+        $pdo->bind(':ida', $id_animal);
+        $pdo->execute();
+    }
+
+
+    public function deleteAnimal(int $id_animal,){
+        $sql = 'DELETE FROM animal WHERE id_animal = :ida';
+        $pdo = $this->pdo;
+        $pdo->query($sql);
+        $pdo->bind(':ida',$id_animal);
+        $pdo->execute();
+    }
+
+    public function filterHabitat($id_habitat)
+    {
+        $sql = 'SELECT 
+                    a.*, h.nom 
+                FROM animal a
+                LEFT JOIN habitat h ON a.id_habitat = h.id_habitat
+                AND h.id_habitat = :idh';
+        $pdo = $this->pdo;
+        $pdo->query($sql);
+        $pdo->bind(':idh', $id_habitat);
+        $pdo->execute();
+        if ($pdo->rowCount() > 0) {
+            $filtered = [] ;
+            $filtered = $pdo->get();
+            return $filtered;
+        }
+        else {
             return null;
         }
     }
