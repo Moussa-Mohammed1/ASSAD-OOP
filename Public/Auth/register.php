@@ -83,10 +83,7 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <body
     class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased overflow-hidden h-screen">
-    <div id="loader">
-        <div class="spinner" aria-hidden="true"></div>
-        <div class="text-sm text-white mt-2">Loading...</div>
-    </div>
+    
     <div class="h-screen w-full flex flex-col lg:flex-row">
         <div class="hidden lg:flex lg:w-1/2 relative bg-background-dark flex-col justify-between p-8 overflow-hidden">
             <div class="absolute inset-0 z-0">
