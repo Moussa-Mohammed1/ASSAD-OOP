@@ -1,29 +1,38 @@
 <?php
-include "./../../config.php";
+include "./../../../App/bootstrap.php";
 session_start();
 $loggeduser = $_SESSION['loggeduser'];
 if (!$loggeduser) {
     header('Location: ./../../auth/login.php');
     exit;
 }
-$habitat_stmt = $conn->prepare("SELECT id_habitat, nom FROM habitat ORDER BY nom ASC");
-$habitat_stmt->execute();
-$results = $habitat_stmt->get_result();
 
-
-$habitats_filter_stmt = $conn->prepare("SELECT nom FROM habitat ORDER BY nom ASC");
-$habitats_filter_stmt->execute();
-$habitats_filter_result = $habitats_filter_stmt->get_result();
-$query = "SELECT a.*, h.nom as habitat_name 
-              FROM animal a 
-              LEFT JOIN habitat h ON a.id_habitat = h.id_habitat 
-              ORDER BY a.id_animal DESC";
-
-$animals_stmt = $conn->prepare($query);
-$animals_stmt->execute();
-$animals_result = $animals_stmt->get_result();
-
-$total_animals = $animals_result->num_rows;
+if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
+    $animal = new Animal();
+    if (isset($_POST['add_animal'])) {
+        $animal->setNom($_POST['nom']);
+        $animal->setEspece($_POST['espece']);
+        $animal->setAlimentation($_POST['alimentation']);
+        $animal->setImage($_POST['image']);
+        $animal->setPaysOrigin($_POST['paysorigine']);
+        $animal->setDescription($_POST['description']);
+        $animal->setIdHabitat($_POST['id_habitat']);
+        $animal->addAnimal();
+    } elseif (isset($_POST['save_animal'])) {
+        $animal->updateAnimal(
+            $_POST['id_animal'],
+            $_POST['nom'],
+            $_POST['espece'],
+            $_POST['alimentation'],
+            $_POST['image'],
+            $_POST['paysorigine'],
+            $_POST['description'],
+            $_POST['id_habitat']
+        );
+    }
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -206,8 +215,8 @@ $total_animals = $animals_result->num_rows;
                 </div>
 
                 <div class="flex flex-col flex-1 min-w-0">
-                    <p class="text-white text-xs font-bold truncate"><?= $loggeduser['nom'] ?></p>
-                    <p class="text-[#9db9a6] text-[10px] truncate"><?= $loggeduser['email'] ?></p>
+                    <p class="text-white text-xs font-bold truncate"><?= $loggeduser->nom ?></p>
+                    <p class="text-[#9db9a6] text-[10px] truncate"><?= $loggeduser->email ?></p>
                 </div>
                 <a href="/ASSAD_V2/Public/Auth/logout.php">
                     <button
@@ -264,22 +273,16 @@ $total_animals = $animals_result->num_rows;
                 <div
                     class="px-6 py-5 border-b border-[#28392e] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div class="flex gap-4 items-center">
-                        <div class="relative">
-                            <span
-                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#9db9a6]">
-                                <span class="material-symbols-outlined text-[20px]">filter_list</span>
-                            </span>
-                            <select
-                                class="pl-10 pr-8 py-2 bg-surface-dark border border-white/10 rounded-lg text-sm text-white focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer appearance-none">
-                                <option>All Habitats</option>
-                                <?php while ($h = $habitats_filter_result->fetch_assoc()): ?>
-                                    <option value="<?= htmlspecialchars($h['nom']) ?>"><?= htmlspecialchars($h['nom']) ?>
-                                    </option>
-                                <?php endwhile; ?>
-                            </select>
-                        </div>
+
                         <div class="text-sm text-[#9db9a6]">
-                            Showing <span class="text-white font-bold"><?= $total_animals ?></span> animals
+                            Showing <span class="text-white font-bold">
+                                <?php
+                                $a = new Animal();
+                                $animals_result = $a->getAnimals();
+                                $h = new Habitat();
+                                $habitats = $h->getHabitats();
+                                echo isset($animals_result) ? count($animals_result) : '0';
+                                ?></span> animals
                         </div>
                     </div>
                     <div class="relative w-full sm:w-64">
@@ -294,31 +297,31 @@ $total_animals = $animals_result->num_rows;
                 <div class="flex-1 overflow-y-auto p-6">
                     <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
 
-                        <?php if ($animals_result->num_rows > 0): ?>
-                            <?php while ($animal = $animals_result->fetch_assoc()): ?>
+                        <?php if (isset($animals_result)): ?>
+                            <?php foreach ($animals_result as $animal): ?>
                                 <div
                                     class="bg-surface-dark rounded-xl border border-white/5 p-4 flex gap-4 group hover:border-primary/30 transition-all">
                                     <div class="w-24 h-24 sm:w-32 sm:h-32 rounded-lg bg-cover bg-center shrink-0 border border-white/5"
-                                        style='background-image: url("<?= htmlspecialchars($animal['image']) ?>");'>
+                                        style='background-image: url("<?= htmlspecialchars($animal->image) ?>");'>
                                     </div>
 
                                     <div class="flex-1 flex flex-col">
                                         <div class="flex justify-between items-start">
                                             <div>
-                                                <h3 class="text-white font-bold text-lg"><?= htmlspecialchars($animal['nom']) ?>
+                                                <h3 class="text-white font-bold text-lg"><?= htmlspecialchars($animal->nom) ?>
                                                 </h3>
                                                 <p class="text-[#9db9a6] text-xs italic">
-                                                    <?= htmlspecialchars($animal['espece']) ?>
+                                                    <?= htmlspecialchars($animal->espece) ?>
                                                 </p>
                                             </div>
                                             <div
                                                 class="px-2 py-1 rounded bg-primary/10 border border-primary/20 text-primary text-[10px] uppercase font-bold tracking-wide">
-                                                <?= htmlspecialchars($animal['habitat_name'] ?? 'Unassigned') ?>
+                                                <?= htmlspecialchars($animal->habitat_name ?? 'Unassigned') ?>
                                             </div>
                                         </div>
 
                                         <p class="mt-2 text-[#9db9a6] text-sm line-clamp-2">
-                                            <?= htmlspecialchars($animal['description']) ?>
+                                            <?= htmlspecialchars($animal->description) ?>
                                         </p>
 
                                         <div class="mt-auto pt-3 flex items-center justify-between border-t border-white/5">
@@ -326,7 +329,7 @@ $total_animals = $animals_result->num_rows;
                                                 <span
                                                     class="material-symbols-outlined text-[16px] text-[#9db9a6]">analytics</span>
                                                 <span class="text-xs text-[#9db9a6] font-medium">
-                                                    <span class="text-white"><?= $animal['visites'] ?></span> Views
+                                                    <span class="text-white"><?= $animal->visites ?></span> Views
                                                 </span>
                                             </div>
 
@@ -334,17 +337,17 @@ $total_animals = $animals_result->num_rows;
 
                                                 <button
                                                     class="p-1.5 text-primary hover:bg-primary/10 rounded transition-colors edit-animal-btn"
-                                                    data-id="<?= $animal['id_animal'] ?>"
-                                                    data-nom="<?= htmlspecialchars($animal['nom']) ?>"
-                                                    data-espece="<?= htmlspecialchars($animal['espece']) ?>"
-                                                    data-alimentation="<?= htmlspecialchars($animal['alimentation']) ?>"
-                                                    data-pays="<?= htmlspecialchars($animal['paysorigine']) ?>"
-                                                    data-habitat="<?= $animal['id_habitat'] ?>"
-                                                    data-desc="<?= htmlspecialchars($animal['description']) ?>"
-                                                    data-image="<?= htmlspecialchars($animal['image']) ?>">
+                                                    data-id="<?= $animal->id_animal ?>"
+                                                    data-nom="<?= htmlspecialchars($animal->nom) ?>"
+                                                    data-espece="<?= htmlspecialchars($animal->espece) ?>"
+                                                    data-alimentation="<?= htmlspecialchars($animal->alimentation) ?>"
+                                                    data-pays="<?= htmlspecialchars($animal->paysorigine) ?>"
+                                                    data-habitat="<?= $animal->id_habitat ?>"
+                                                    data-desc="<?= htmlspecialchars($animal->description) ?>"
+                                                    data-image="<?= htmlspecialchars($animal->image) ?>">
                                                     <span class="material-symbols-outlined text-[18px]">edit</span>
                                                 </button>
-                                                <a href="./delete.php?id=<?= $animal['id_animal'] ?>"
+                                                <a href="?iddelete=<?= $animal->id_animal ?>"
                                                     class="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded transition-colors"
                                                     title="Delete">
                                                     <span class="material-symbols-outlined text-[18px]">delete</span>
@@ -353,7 +356,7 @@ $total_animals = $animals_result->num_rows;
                                         </div>
                                     </div>
                                 </div>
-                            <?php endwhile; ?>
+                            <?php endforeach; ?>
                         <?php else: ?>
                             <div class="col-span-full py-20 text-center">
                                 <span class="material-symbols-outlined text-6xl text-white/10">pets</span>
@@ -371,7 +374,7 @@ $total_animals = $animals_result->num_rows;
 
             <div id="new-animal-form"
                 class="hidden fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-                <form method="POST" action="./create.php"
+                <form method="POST" action=""
                     class="w-11/12 lg:w-3/5 h-[90vh] lg:h-3/4 bg-[#1a2a22] rounded-xl border border-[#28392e] flex flex-col overflow-hidden">
                     <div class="p-6 border-b border-[#28392e] flex justify-between items-center">
                         <h3 class="text-white font-bold text-lg">Add New Animal</h3>
@@ -404,11 +407,12 @@ $total_animals = $animals_result->num_rows;
                                     class="w-full bg-[#1a2a22] border border-[#5a6b60] rounded-lg px-3 py-2 text-white"
                                     required>
                                     <option value="" disabled selected>Select habitat</option>
-                                    <?php $results->data_seek(0);
-                                    while ($row = $results->fetch_assoc()): ?>
-                                        <option value="<?= $row['id_habitat'] ?>"><?= htmlspecialchars($row['nom']) ?>
-                                        </option>
-                                    <?php endwhile; ?>
+                                    <?php if (isset($habitats)): ?>
+                                        <?php foreach ($habitats as $habitat): ?>
+                                            <option value="<?= $habitat->id_habitat ?>"><?= htmlspecialchars($habitat->nom) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
                                 </select>
                             </div>
                         </div>
@@ -427,7 +431,7 @@ $total_animals = $animals_result->num_rows;
 
             <div id="edit-animal-form"
                 class="hidden fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-                <form method="POST" action="./edit.php"
+                <form method="POST" action=""
                     class="w-11/12 lg:w-3/5 h-[90vh] lg:h-3/4 bg-[#1a2a22] rounded-xl border border-[#28392e] flex flex-col overflow-hidden">
                     <div class="p-6 border-b border-[#28392e] flex justify-between items-center">
                         <h3 class="text-white font-bold text-lg">Edit Animal</h3>
@@ -460,11 +464,12 @@ $total_animals = $animals_result->num_rows;
                                 <select id="edit-id_habitat" name="id_habitat"
                                     class="w-full bg-[#1a2a22] border border-[#5a6b60] rounded-lg px-3 py-2 text-white"
                                     required>
-                                    <?php $results->data_seek(0);
-                                    while ($row = $results->fetch_assoc()): ?>
-                                        <option value="<?= $row['id_habitat'] ?>"><?= htmlspecialchars($row['nom']) ?>
-                                        </option>
-                                    <?php endwhile; ?>
+                                    <?php if (isset($habitats)): ?>
+                                        <?php foreach ($habitats as $habitat): ?>
+                                            <option value="<?= $habitat->id_habitat ?>"><?= htmlspecialchars($habitat->nom) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
                                 </select>
                             </div>
                         </div>
