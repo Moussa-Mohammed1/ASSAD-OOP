@@ -358,7 +358,7 @@ $habitats = $habitat->getHabitats();
                                                         title="Edit Details">
                                                         <span class="material-symbols-outlined text-[18px]">edit</span>
                                                     </button>
-                                                    <form method="post" action="" style="display:inline-block;" onsubmit="return confirm('Are you sure?');">
+                                                    <form method="post" action="" style="display:inline-block;">
                                                         <input type="hidden" name="id_habitat" value="<?php echo $h->id_habitat; ?>">
                                                         <input type="hidden" name="delete_habitat" value="1">
                                                         <button type="submit"
