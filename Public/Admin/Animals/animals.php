@@ -6,6 +6,13 @@ if (!$loggeduser) {
     header('Location: ./../../auth/login.php');
     exit;
 }
+if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'GET') {
+    $id = $_GET['iddelete'] ?? '';
+    if (isset($id)) {
+        $a = new Animal();
+        $a->deleteAnimal($id);
+    }
+}
 
 if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
     $animal = new Animal();
@@ -30,8 +37,6 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
             $_POST['id_habitat']
         );
     }
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit;
 }
 ?>
 
