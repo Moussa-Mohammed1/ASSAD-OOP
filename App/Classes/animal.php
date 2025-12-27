@@ -23,7 +23,7 @@ class Animal
     public function getAnimals()
     {
         $pdo = new Database();
-        $sql = 'SELECT a.*, h.nom FROM animal a LEFT JOIN habitat h ON a.id_habitat = h.id_habitat';
+        $sql = 'SELECT a.*, h.nom AS habitat_name FROM animal a LEFT JOIN habitat h ON a.id_habitat = h.id_habitat';
         $pdo->query($sql);
         $pdo->execute();
         if ($pdo->rowCount() > 0) {
@@ -79,11 +79,11 @@ class Animal
     }
 
 
-    public function deleteAnimal($image){
+    public function deleteAnimal($id_animal){
         $pdo =  new Database();
-        $sql = 'DELETE FROM animal WHERE `image` = :img';
+        $sql = 'DELETE FROM animal WHERE id_animal = :ida';
         $pdo->query($sql);
-        $pdo->bind(':img',$image);
+        $pdo->bind(':ida',$id_animal);
         $pdo->execute();
     }
 
