@@ -91,6 +91,7 @@ class VisitesGuidees
         $pdo->bind(':prix', $this->prix);
         $pdo->bind(':idg', $this->id_guide);
         $pdo->execute();
+        return $pdo->lastInsertId();
     }
 
     public function updateVisite($id_visite, $titre, $dateHeure, $langue, $capaciteMax, $status, $duree, $prix)
@@ -153,4 +154,5 @@ class VisitesGuidees
         $pdo->bind(':idv', $id_visite);
         $pdo->execute();
     }
+
 }

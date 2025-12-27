@@ -12,8 +12,8 @@ if (isset($_SERVER['REQUEST_METHOD'])  && $_SERVER['REQUEST_METHOD'] == 'POST' &
     $capacite_max = $_POST['capacite_max'];
     $prix = $_POST['prix'];
     $visite = new VisitesGuidees($id_guide, $titre, $date, $langue, $capacite_max, $status, $duree, $prix);
-    $visite->addVisite();
-    header('Location: ./../Steps/steps.php?id=' .  $titre );
+    $new_id = $visite->addVisite();
+    header('Location: ./../Steps/steps.php?id=' .  $new_id );
     exit();
 }
 ?>
