@@ -14,7 +14,30 @@ class Reservation
         $this->nbr_personne = $nbr_personne;
         $this->date_reservation = $date_reservation;
     }
-
+    public function getReservationsByguideVisites($id_guide)
+    {
+        $pdo = new Database();
+        $sql = 'SELECT 
+                    u.nom AS nom_visiteur,
+                    r.nbpersonnes,
+                    r.datereservations
+                FROM reservation r
+                JOIN utilisateur u ON r.id_user = u.id_user
+                JOIN visitesguidees v ON r.id_visite = v.id_visite
+                WHERE v.id_user = :idg
+                ORDER BY r.datereservations DESC;
+                ';
+        $pdo->query($sql);
+        $pdo->bind(':idg', $id_guide);
+        $pdo->execute();
+        if ($pdo->rowCount() > 0) {
+                $reservations = [];
+                $reservations = $pdo->get();
+                return $reservations;
+            } else {
+                return null;
+            }
+    }
     public function getAllReservations($id_user = null)
     {
         $pdo = new Database();
