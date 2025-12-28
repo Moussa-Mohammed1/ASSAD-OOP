@@ -20,7 +20,8 @@ class Reservation
         $sql = 'SELECT 
                     u.nom AS nom_visiteur,
                     r.nbpersonnes,
-                    r.datereservations
+                    r.datereservations,
+                    v.titre
                 FROM reservation r
                 JOIN utilisateur u ON r.id_user = u.id_user
                 JOIN visitesguidees v ON r.id_visite = v.id_visite
@@ -106,5 +107,17 @@ class Reservation
         $pdo->query($sql);
         $pdo->bind(':id', $id_reservation);
         $pdo->execute();
+    }
+
+    public function hasUserBookedVisite($id_user, $id_visite)
+    {
+        $pdo = new Database();
+        $sql = 'SELECT COUNT(*) as count FROM reservation WHERE id_user = :idu AND id_visite = :idv';
+        $pdo->query($sql);
+        $pdo->bind(':idu', $id_user);
+        $pdo->bind(':idv', $id_visite);
+        $pdo->execute();
+        $result = $pdo->single();
+        return $result && $result->count > 0;
     }
 }
