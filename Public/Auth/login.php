@@ -6,29 +6,31 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
         $email = $_POST['email'];
         $pass = $_POST['password'];
         $user = new Utilisateur();
-        if ($user->signIn($email, $pass)) {
-            $res = $user->signIn($email, $pass);
+        $res = $user->signIn($email, $pass);
+        if ($res !== null) {
             $_SESSION['loggeduser'] = $res;
-            if ($res->role == 'NOTAPPROVED') {
+            $role = trim($res->role);
+            if ($role == 'NOTAPPROVED') {
                 header('Location: ./../auth/unapproved.php');
                 exit();
             }
 
-            if ($res->approved = '0') {
+            if ($role == 'guide' && $res->approved == '0') {
                 header('Location: ./../auth/approval.php');
                 exit();
             }
-            switch ($res->role) {
+            switch ($role) {
                 case 'admin':
                     header('Location: ./../Admin/dashboard.php');
                     break;
                 case 'guide':
                     header('Location: ./../Guide/dashboard.php');
                     break;
-                case 'Visitor':
+                case 'visitor':
                     header('Location: ./../Visitor/home.php');
                     break;
                 default:
+                    header('Location: ./../Visitor/home.php');
                     break;
             }
             exit();
@@ -95,7 +97,7 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <body
     class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased h-screen overflow-hidden">
-    
+
     <div class="flex h-screen w-full">
 
         <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-background-dark">
