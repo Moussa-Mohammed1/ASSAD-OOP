@@ -7,7 +7,7 @@ CREATE TABLE utilisateur(
     id_user INT AUTO_INCREMENT PRIMARY KEY,
     nom VARCHAR(50),
     email VARCHAR(50),
-    `role` VARCHAR(50) DEFAULT 'visiteur',
+    `role` VARCHAR(50) DEFAULT 'visitor',
     isactive BOOLEAN DEFAULT 1,
     approved BOOLEAN DEFAULT 0,
     motpasse_hash VARCHAR(100)
