@@ -123,7 +123,7 @@ class VisitesGuidees
     {
         $pdo = new Database();
         $sql = 'UPDATE visitesguidees
-                SET `status` = CANCELED
+                SET `status` = "CANCELLED"
                 WHERE id_visite = :idv';
         $pdo->query($sql);
         $pdo->bind(':idv', $id_visite);
@@ -136,7 +136,7 @@ class VisitesGuidees
         $sql = 'SELECT * FROM visitesguidees
                 WHERE titre = :titre';
         $pdo->query($sql);
-        $pdo->bind(':title', $titre);
+        $pdo->bind(':titre', $titre);
         $pdo->execute();
         if ($pdo->rowCount() == 1) {
             $search  = $pdo->single();
@@ -144,6 +144,47 @@ class VisitesGuidees
         } else {
             return null;
         }
+    }
+
+    public function getPublicVisites($limit = 3)
+    {
+        $pdo = new Database();
+        $sql = 'SELECT * FROM visitesguidees
+                WHERE `status` = :stat
+                ORDER BY dateheure ASC
+                LIMIT :l';
+        $pdo->query($sql);
+        $pdo->bind(':stat', 'ONLINE');
+        $pdo->bind(':l', $limit);
+        $pdo->execute();
+        if ($pdo->rowCount() > 0) {
+            return $pdo->get();
+        }
+        return [];
+    }
+
+    public function searchPublicVisites($search, $limit = 6)
+    {
+        $search = trim((string)$search);
+        if ($search === '') {
+            return [];
+        }
+
+        $pdo = new Database();
+        $sql = 'SELECT * FROM visitesguidees
+                WHERE `status` = :stat
+                  AND titre LIKE :q
+                ORDER BY dateheure ASC
+                LIMIT ' . (int)$limit;
+        $pdo->query($sql);
+        $pdo->bind(':stat', 'ONLINE');
+        $like = '%' . $search . '%';
+        $pdo->bind(':q', $like);
+        $pdo->execute();
+        if ($pdo->rowCount() > 0) {
+            return $pdo->get();
+        }
+        return [];
     }
 
     public function cancelVisite($id_visite)
@@ -154,5 +195,4 @@ class VisitesGuidees
         $pdo->bind(':idv', $id_visite);
         $pdo->execute();
     }
-
 }
