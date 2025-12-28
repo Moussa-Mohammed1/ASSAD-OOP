@@ -25,7 +25,7 @@ class Utilisateur
         $pdo->bind(':email', $email);
         $pdo->execute();
         $result = $pdo->single();
-        if ($result && password_verify($MotPasseHash, $result->motpasse_hash)) {
+        if (!empty($result) && password_verify($MotPasseHash, $result->motpasse_hash)) {
             return $result;
         } else {
             return null;
